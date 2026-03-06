@@ -1,13 +1,28 @@
-import Sidebar from "./Sidebar";
 import { Outlet } from "react-router-dom";
+import Navbar from "./Navbar";
+import Sidebar from "./Sidebar";
 
-const Layout = () => {
+export default function Layout() {
   return (
-    <div className="flex">
-      <Sidebar />
-      <Outlet />
+    <div className="h-screen flex flex-col">
+
+      {/* 🔹 Top Navbar */}
+      <Navbar />
+
+      {/* 🔹 Sidebar + Content */}
+      <div className="flex flex-1 overflow-hidden">
+
+        {/* Sidebar */}
+        <div className="w-64 bg-white shadow-md">
+          <Sidebar />
+        </div>
+
+        {/* Page Content */}
+        <div className="flex-1 p-6 bg-gray-50 overflow-y-auto">
+          <Outlet />
+        </div>
+
+      </div>
     </div>
   );
-};
-
-export default Layout;
+}

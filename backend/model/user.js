@@ -1,28 +1,74 @@
-import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
+import mongoose from "mongoose"
 
-const userSchema = new mongoose.Schema({
-  fullName: { type: String, required: true, trim: true },
-  email: { type: String, required: true, unique: true, lowercase: true },
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true, minlength: 6 },
-  role: { type: String, enum: ["Volunteer", "NGO", "Admin"], required: true }
-}, { timestamps: true });
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
 
-/* HASH PASSWORD */
-userSchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true
+    },
 
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-});
+    username: {
+      type: String,
+      required: true,
+      unique: true
+    },
 
-/* COMPARE PASSWORD */
-userSchema.methods.comparePassword = async function (enteredPassword) {
-  if (!this.password) {
-    throw new Error("Password not found in DB");
-  }
-  return await bcrypt.compare(enteredPassword, this.password);
-};
+    password: {
+      type: String,
+      required: true
+    },
+
+    role: {
+      type: String,
+      enum: ["volunteer", "ngo", "admin"],
+      default: "volunteer"
+    },
+
+    location: {
+      type: String,
+      default: ""
+    },
+
+    skills: [
+      {
+        type: String
+      }
+    ],
+
+    bio: {
+      type: String,
+      default: ""
+    },
+
+    isVerified: {
+      type: Boolean,
+      default: false
+    },
+
+    loginOtp: String, 
+    
+    loginOtpExpire: Date,
+
+
+    otp: {
+      type: String,
+      default: null
+    },
+
+    otpExpiry: {
+      type: Date,
+      default: null
+    }
+  },
+  { timestamps: true }
+);
 
 export default mongoose.model("User", userSchema);

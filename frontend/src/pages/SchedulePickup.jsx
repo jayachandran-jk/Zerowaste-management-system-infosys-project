@@ -38,16 +38,28 @@ const SchedulePickup = () => {
     });
   };
 
-  const handleSubmit = async ()=>{
-    try{
-      const res = await axios.post("http://localhost:3000/api/pickups",formData);
-      toast.success("Pickup Scheduled Successfully");
-      console.log(res.data);
-    }catch(err){
-      console.error(err);
-      toast.error("Error scheduling pickup");
-    }
-  };
+ const handleSubmit = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await axios.post(
+      "http://localhost:3000/api/pickups",
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    toast.success("Pickup Scheduled Successfully");
+    console.log(res.data);
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Error scheduling pickup");
+  }
+};
 
   const navigate = useNavigate();
 
@@ -63,7 +75,7 @@ const SchedulePickup = () => {
          <div className="absolute right-0 top-0">
       <button
         onClick={() => navigate("/schedule-page")}
-        className="bg-blue-600 text-white m-10 px-4 py-2 rounded-full hover:bg-gray-400 cursor-pointer hover:text-blue-600">
+        className="bg-green-600 text-white m-15 px-5 py-2 rounded-full hover:bg-gray-400 cursor-pointer hover:text-blue-600">
         History
       </button>
     </div>
@@ -96,7 +108,7 @@ const SchedulePickup = () => {
           </select>
 
           <button onClick={()=>setStep(2)}
-            className="bg-blue-600 text-white px-4 py-2  justify-center rounded hover:bg-gray-400 cursor-pointer hover:text-blue-600">
+            className="bg-green-600 text-white px-4 py-2  justify-center rounded hover:bg-gray-400 cursor-pointer hover:text-blue-600">
             Next
           </button>
 
@@ -123,7 +135,7 @@ const SchedulePickup = () => {
             <button className="bg-blue-600 rounded text-white px-4 py-2 hover:bg-gray-400 cursor-pointer hover:text-blue-600" onClick={()=>setStep(1)}>Back</button>
 
             <button onClick={handleSubmit}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-gray-400 cursor-pointer hover:text-blue-600">
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-gray-400 cursor-pointer hover:text-blue-600">
               Submit
             </button>
           </div>

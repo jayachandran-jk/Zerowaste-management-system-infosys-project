@@ -13,6 +13,10 @@ import OpportunityDetails from './pages/OpportunityDetails'
 import {Toaster} from 'react-hot-toast'
 import SchedulePickupPage from './pages/SchedulePickupPage'
 import EditOpportunity from './pages/Edit-Opportunity'
+import Messages from './pages/Messages'
+import OtpVerification from './pages/OtpVerification'
+import MyProfile from './pages/MyProfile'
+import ProtectedRoute from './components/ProtectRoute.jsx'
 
 function App() {
 
@@ -25,15 +29,23 @@ function App() {
         {/* routes without sidebar */}
         <Route path="/login" element={<Login/>} />
         <Route path="/register" element={<Register/>}/>
+        <Route path="/verify-register-otp" element={<OtpVerification />} />
   
       <Route element={<Layout/> }>
-      <Route path="/" element={<Dashboard/>} />
+      <Route path="/dashboard" element={<Dashboard/>} />
       <Route path="/opportunities" element={<Opportunities />} />
       <Route path="/schedule" element={<SchedulePickup/>}/>
       <Route path="/create-opportunity" element={<CreateOpportunity/>} />
       <Route path="/opportunity/:id" element={<OpportunityDetails/>}/>
-      <Route path="/schedule-page" element={<SchedulePickupPage />} />
+<Route
+  path="/schedule-page" element={<SchedulePickupPage />}/>
+<Route
+  path="/schedule"
+  element={ <SchedulePickup />}
+/>
       <Route path="/edit-opportunity/:id" element={<EditOpportunity />} />
+      <Route path="/messages" element={<Messages/>} />
+      <Route path="/my-profile" element={<MyProfile/> } />
     </Route>
     </Routes>
     </BrowserRouter>

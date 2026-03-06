@@ -1,54 +1,78 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { FiSearch, FiMapPin, FiCalendar, FiPlus } from "react-icons/fi";
+import { FiSearch, FiPlus } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
 export default function OpportunitiesPage() {
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All");
+  const [role, setRole] = useState("");
+  const [userId, setUserId] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get("http://localhost:3000/api/opportunity")
-      .then(res => {
-        console.log("DATA:", res.data); // debug
-        setData(res.data);
-      })
-      .catch(err => console.log("ERROR:", err));
-  }, []);
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
-  const navigate = useNavigate()
+      const res = await axios.get(
+        "http://localhost:3000/api/opportunity",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setData(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  fetchData();
+
+  const storedUser = localStorage.getItem("user");
+  if (storedUser) {
+    const user = JSON.parse(storedUser);
+    setRole(user?.role);
+    setUserId(user?._id);
+  }
+}, []);
 
   const filtered = data.filter(item =>
     item.title.toLowerCase().includes(search.toLowerCase()) &&
     (status === "All" || item.status === status)
   );
 
-
-
   return (
     <div className="p-6 bg-gray-50 min-h-screen w-full">
 
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold">Volunteer Opportunities</h1>
           <p className="text-sm text-gray-500">
-            Browse and join recycling and waste management initiatives
+            Browse and join recycling initiatives
           </p>
         </div>
 
-        <button onClick={() => navigate("/create-opportunity")} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow">
-          <FiPlus />
-          Create Opportunity
-        </button>
+        {(role === "ngo") && (
+          <button
+            onClick={() => navigate("/create-opportunity")}
+            className="flex items-center gap-2 bg-green-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow"
+          >
+            <FiPlus />
+            Create Opportunity
+          </button>
+        )}
       </div>
 
       {/* SEARCH + FILTER */}
-      <div className="flex flex-col md:flex-row justify-center gap-4 mb-6">
-
-        {/* Search */}
-        <div className="flex items-center bg-white border rounded-lg px-3 w-200">
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex items-center bg-white border rounded-lg px-3 w-full md:w-1/2 shadow-sm">
           <FiSearch className="text-gray-400" />
           <input
             type="text"
@@ -59,84 +83,69 @@ export default function OpportunitiesPage() {
           />
         </div>
 
-        {/* Filter */}
         <select
-          className="border rounded-lg px-3 py-2 bg-white"
+          className="border rounded-lg px-3 py-2 bg-white shadow-sm w-full md:w-48"
           value={status}
           onChange={(e) => setStatus(e.target.value)}
         >
-          <option>All</option>
-          <option>Open</option>
-          <option>Closed</option>
+          <option value="All">All</option>
+          <option value="Open">Open</option>
+          <option value="Closed">Closed</option>
         </select>
-
       </div>
 
-      {/* CARDS GRID */}
+      {/* CARDS */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filtered.length > 0 ? (
+          filtered.map(o => {
+          const isApplied = o.applicants?.some(
+  (app) => app.user === userId
+); // Check if user applied
 
-        {filtered.map(o => (
-          <div
-            key={o._id}
-            className="bg-white rounded-2xl border shadow-sm hover:shadow-md transition"
-          >
-
-            {/* IMAGE */}
-            <img
-              src={`http://localhost:3000/${o.image.replace(/^\/+/, "").startsWith("uploads")
-                ? o.image.replace(/^\/+/, "")
-                : "uploads/" + o.image}`}
-              alt={o.title}
-              className="h-44 w-full object-cover rounded-t-2xl"
-            />
-            {/* <p className="text-xs">{o.image}</p> */}
-            {/* BODY */}
-            <div className="p-4">
-
-              {/* TITLE + STATUS */}
-              <div className="flex justify-between items-center">
-                <h2 className="font-semibold text-lg">{o.title}</h2>
-
-                <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full">
-                  {o.status || "Open"}
-                </span>
-              </div>
-
-              {/* DESCRIPTION */}
-              <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                {o.description}
-              </p>
-
-              {/* INFO */}
-              <div className="text-sm text-gray-500 mt-4 space-y-1">
-
-                <div className="flex items-center gap-2">
-                  <FiCalendar />
-                  <span>{o.date}</span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <FiMapPin />
-                  <span>{o.location}</span>
-                </div>
-
-                {o.duration && (
-                  <p>⏱ {o.duration}</p>
-                )}
-              </div>
-
-              {/* BUTTON */}
-              <button
-                onClick={() => navigate(`/opportunity/${o._id}`)}
-                className="mt-5 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium"
+            return (
+              <div
+                key={o._id}
+                className="bg-white rounded-2xl border shadow-sm hover:shadow-md transition relative"
               >
-                View Details
-              </button>
+                {/* Applied Badge */}
+                {isApplied && (
+                  <span className="absolute top-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded-full z-10">
+                    Applied
+                  </span>
+                )}
 
-            </div>
-          </div>
-        ))}
+                <img
+                  src={`http://localhost:3000/${
+                    o.image.replace(/^\/+/, "").startsWith("uploads")
+                      ? o.image.replace(/^\/+/, "")
+                      : "uploads/" + o.image
+                  }`}
+                  alt={o.title}
+                  className="h-44 w-full object-cover rounded-t-2xl"
+                />
 
+                <div className="p-4">
+                  <h2 className="font-semibold text-lg">{o.title}</h2>
+
+                  <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                    {o.description}
+                  </p>
+
+                  <button
+                    onClick={() => navigate(`/opportunity/${o._id}`)}
+                    className="mt-5 w-full bg-green-600 hover:bg-blue-700 text-white py-2 rounded-lg"
+                  >
+                    View Details
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <p className="text-gray-500 col-span-full text-center">
+            No opportunities found.
+          </p>
+        )}
       </div>
     </div>
   );

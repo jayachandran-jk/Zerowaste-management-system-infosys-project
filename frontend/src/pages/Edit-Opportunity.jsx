@@ -50,30 +50,36 @@ export default function EditOpportunity() {
 
   // Submit update
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      const data = new FormData();
+  try {
+    const token = localStorage.getItem("token");
 
-      for (let key in formData) {
-        data.append(key, formData[key]);
-      }
+    const data = new FormData();
 
-      if (image) {
-        data.append("image", image);
-      }
-
-      await axios.put(`/api/opportunity/${id}`, data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      toast.success("Updated successfully");
-      navigate(`/opportunity/${id}`);
-
-    } catch (err) {
-      console.error(err);
-      toast.error("Update failed");
+    for (let key in formData) {
+      data.append(key, formData[key]);
     }
+
+    if (image) {
+      data.append("image", image);
+    }
+
+    await axios.put(`/api/opportunity/${id}`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    toast.success("Updated successfully");
+    navigate(`/opportunity/${id}`);
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Update failed");
+  }
+
   };
 
   return (

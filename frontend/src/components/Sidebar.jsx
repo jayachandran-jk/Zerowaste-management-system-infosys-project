@@ -24,7 +24,7 @@ const Sidebar = () => {
   ];
 
   const settings = [
-    { name: "My Profile", icon: <FiUser />, path: "/profile" },
+    { name: "My Profile", icon: <FiUser />, path: "/my-profile" },
     { name: "Settings", icon: <FiSettings />, path: "/settings" },
     { name: "Help & Support", icon: <FiHelpCircle />, path: "/help" },
   ];
@@ -32,7 +32,10 @@ const Sidebar = () => {
   const linkStyle =
     "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition";
 
-  const activeStyle = "bg-blue-50 text-blue-600 font-medium";
+  const activeStyle = "bg-green-50 text-green-600 font-medium";
+
+  const storedUser = localStorage.getItem("user");
+  const user = storedUser ? JSON.parse(storedUser) : null;
 
   return (
     <div
@@ -56,17 +59,20 @@ const Sidebar = () => {
         </h1>
 
         {/* User */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center font-bold">
-            A
-          </div>
-          {open && (
-            <div>
-              <p className="font-semibold text-sm">Admin User</p>
-              <p className="text-xs text-gray-500">Admin</p>
-            </div>
-          )}
-        </div>
+        {/* User - Only for Admin */}
+{user?.role === "admin" && (
+  <div className="flex items-center gap-3 mb-8">
+    <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center font-bold">
+      {user?.name?.charAt(0)?.toUpperCase()}
+    </div>
+    {open && (
+      <div>
+        <p className="font-semibold text-sm">{user?.name}</p>
+        <p className="text-xs text-gray-500">Admin</p>
+      </div>
+    )}
+  </div>
+)}
 
         {/* Main Menu */}
         <div className="mb-6">

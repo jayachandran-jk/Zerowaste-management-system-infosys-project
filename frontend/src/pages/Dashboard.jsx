@@ -7,7 +7,11 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("/api/dashboard");
+       const res = await axios.get("/api/dashboard", {
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("token")}`
+  }
+});
         setData(res.data);
       } catch (err) {
         console.log("Dashboard error:", err.response?.data || err.message);

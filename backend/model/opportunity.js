@@ -10,7 +10,26 @@ const opportunitySchema = new mongoose.Schema({
   status: {
     type: String,
     default: "Open"
+  },
+  applicants: [
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    },
+    status: {
+      type: String,
+      enum: ["pending", "accepted", "rejected"],
+      default: "pending"
+    }
   }
+],
+createdBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  // required: true
+}
+
 }, { timestamps: true });
 
 export default mongoose.model("Opportunity", opportunitySchema);

@@ -15,9 +15,10 @@ const pickupSchema = new mongoose.Schema({
 
   // ✅ ADD THIS
   status: {
-    type: String,
-    default: "Open"
-  }
+  type: String,
+  enum: ["Pending", "Accepted", "Rejected", "Closed"],
+  default: "Pending"
+}
 
 },{ timestamps: true });
 

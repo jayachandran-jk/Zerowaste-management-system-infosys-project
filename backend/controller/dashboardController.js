@@ -2,6 +2,7 @@ import Stats from "../model/stats.js";
 import Pickup from "../model/pickup.js";
 import Opportunity from "../model/opportunity.js";
 import ActivityLog from "../model/activitylog.js";
+import Message from "../model/messages.js"
 
 // ensure stats document exists
 const ensureStats = async () => {
@@ -85,13 +86,16 @@ export const getPickups = async (req,res)=>{
 // add volunteer hours
 export const createOpportunity = async (req, res) => {
   try {
-
+    console.log("REQ.USER:", req.user);   // 🔹 check this
+    console.log("REQ.BODY:", req.body);
+    console.log("REQ.FILE:", req.file);
 
     const { title, description, location, date, duration, status } = req.body;
+    const image = req.file ? `/uploads/${req.file.filename}` : null;
 
-    // image file (multer upload)
-    const image = req.file ? req.file.filename : null;
-
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized: User not found" });
+    }
 
     const newOpportunity = await Opportunity.create({
       title,
@@ -99,22 +103,14 @@ export const createOpportunity = async (req, res) => {
       location,
       date,
       duration,
-      status,
-      image 
+      status: status || "Open",
+      image,
+      createdBy: req.user._id
     });
 
-    // log activity
-    await ActivityLog.create({
-      user: "Admin",
-      action: "Created Opportunity",
-      value: 1
-    });
-    console.log(req.body);
-    console.log(req.file);
-
-    res.status(201).json(newOpportunity);
-
+    res.status(201).json({ success: true, opportunity: newOpportunity });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -209,3 +205,27 @@ export const addRecycledItems = async (req, res) => {
   }
 };
 
+
+export const sendMessage = async (req, res) => {
+  try {
+    const senderId = req.user._id; // 🔥 take from token
+    const { receiverId, text } = req.body;
+
+    if (!receiverId || !text) {
+      return res.status(400).json({
+        message: "receiverId and text are required",
+      });
+    }
+
+    const newMessage = await Message.create({
+      senderId,
+      receiverId,
+      text,
+    });
+
+    res.status(201).json(newMessage);
+  } catch (error) {
+    console.log("Message Error:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};

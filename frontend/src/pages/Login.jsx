@@ -1,84 +1,178 @@
-import React, { useState, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { AuthContext } from "./authContext";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { loginUser } from "../services/authService";
 
-const Login = () => {
+function Login() {
   const navigate = useNavigate();
-  const { login } = useContext(AuthContext);
 
-  const [loginData, setLoginData] = useState({
+  const [formData, setFormData] = useState({
     email: "",
-    password: "",
+    password: ""
   });
 
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  // 🔒 Redirect if already logged in
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+
+    if (!token || !storedUser) return;
+
+    const user = JSON.parse(storedUser);
+
+    if (user?.role === "admin") navigate("/admin");
+    else if (user?.role === "ngo") navigate("/ngo");
+    else navigate("/volunteer");
+  }, [navigate]);
+
   const handleChange = (e) => {
-    setLoginData({
-      ...loginData,
-      [e.target.name]: e.target.value,
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const success = await login("login", loginData);
+    setError("");
+    setSuccess("");
 
-    if (success) {
-      navigate("/dashboard"); // change route if needed
+    try {
+      const response = await loginUser(formData);
+      const userId = response.userId;
+
+      localStorage.setItem("otpUserId", userId);
+      localStorage.setItem("otpType", "login");
+
+      setSuccess("OTP sent. Redirecting...");
+
+      setTimeout(() => {
+        navigate("/verify-register-otp");
+      }, 1000);
+
+    } catch (err) {
+      setError(err.response?.data?.message || "Invalid credentials");
     }
   };
 
   return (
-    <div className="flex min-h-screen justify-center items-center">
-      <div className="w-full max-w-md p-8 border rounded-lg shadow">
-        <h2 className="text-2xl font-bold text-center">Login</h2>
+    <div className="min-h-screen flex bg-gray-100">
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+      {/* LEFT SECTION */}
+      <div className="hidden lg:flex w-1/2 bg-green-600 text-white p-12 flex-col justify-center">
+        <h1 className="text-4xl font-bold mb-4">♻ WasteZero</h1>
+        <h2 className="text-2xl font-semibold mb-4">
+          Welcome Back!
+        </h2>
+        <p className="mb-8 text-green-100">
+          Log in to schedule pickups, manage recycling opportunities,
+          and continue making a positive impact on our environment.
+        </p>
 
-          {/* Email */}
+        <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium">Email</label>
-            <input
-              type="email"
-              name="email"
-              required
-              onChange={handleChange}
-              placeholder="Enter your email"
-              className="w-full border rounded-md p-2"
-            />
+            <h4 className="font-semibold">Manage Pickups</h4>
+            <small className="text-green-200">
+              Track and schedule waste collection
+            </small>
           </div>
-
-          {/* Password */}
           <div>
-            <label className="block text-sm font-medium">Password</label>
-            <input
-              type="password"
-              name="password"
-              required
-              onChange={handleChange}
-              placeholder="Enter your password"
-              className="w-full border rounded-md p-2"
-            />
+            <h4 className="font-semibold">Monitor Impact</h4>
+            <small className="text-green-200">
+              See your environmental contributions
+            </small>
           </div>
+          <div>
+            <h4 className="font-semibold">Stay Connected</h4>
+            <small className="text-green-200">
+              Collaborate with NGOs and volunteers
+            </small>
+          </div>
+        </div>
+      </div>
 
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-md"
-          >
-            Login
-          </button>
+      {/* RIGHT SECTION */}
+      <div className="flex w-full lg:w-1/2 items-center justify-center p-6">
+        <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-lg">
 
-          <p className="text-center text-sm mt-4">
-            Don’t have an account?{" "}
-            <Link to="/register" className="text-blue-600 hover:underline">
+          {/* Tabs */}
+          <div className="flex mb-6 border-b">
+            <button className="flex-1 py-2 border-b-2 border-green-600 font-semibold text-green-600">
+              Login
+            </button>
+            <button
+              onClick={() => navigate("/register")}
+              className="flex-1 py-2 text-gray-500 hover:text-green-600"
+            >
               Register
-            </Link>
+            </button>
+          </div>
+
+          <h2 className="text-2xl font-bold mb-2">Sign in to your account</h2>
+          <p className="text-gray-500 mb-6">
+            Enter your credentials to continue
           </p>
 
-        </form>
+          {error && (
+            <p className="bg-red-100 text-red-600 p-2 rounded mb-4 text-sm">
+              {error}
+            </p>
+          )}
+          {success && (
+            <p className="bg-green-100 text-green-600 p-2 rounded mb-4 text-sm">
+              {success}
+            </p>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                placeholder="Your email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                name="password"
+                placeholder="Your password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition duration-300"
+            >
+              Login
+            </button>
+
+          </form>
+        </div>
       </div>
     </div>
   );
-};
+}
 
 export default Login;
