@@ -12,6 +12,8 @@ import http from "http";   // ✅ FIXED
 import userRoutes from "./routes/userRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoute.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
+import Notification from "./model/notification.js";
 
 import { getDashboardData } from "./controller/dashboardController.js";
 
@@ -36,12 +38,13 @@ app.use("/api/pickups", pickupRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/dashboard", dashboardRoutes)
+app.use("/api/notifications", notificationRoutes);
 
 // Store online users
 const onlineUsers = new Map();
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // your frontend port
+    origin: "http://localhost:5174", // your frontend port
     methods: ["GET", "POST"],
   },
 });
@@ -68,15 +71,29 @@ io.on("connection", (socket) => {
   });
 
   // Send message
-  socket.on("sendMessage", ({ senderId, receiverId, text }) => {
-    const user = getUser(receiverId);
+  socket.on("sendMessage", async ({ senderId, receiverId, text }) => {
+    try {
+      const recipient = getUser(receiverId);
 
-    if (user) {
-      io.to(user.socketId).emit("receiveMessage", {
-        senderId,
-        receiverId,
-        text,
+      // Create a notification for the receiver
+      await Notification.create({
+        recipient: receiverId,
+        sender: senderId,
+        type: "message",
+        content: `New message: ${text.substring(0, 30)}${text.length > 30 ? '...' : ''}`,
+        link: "/messages",
       });
+
+      if (recipient) {
+        io.to(recipient.socketId).emit("receiveMessage", {
+          senderId,
+          receiverId,
+          text,
+        });
+        io.to(recipient.socketId).emit("newNotification");
+      }
+    } catch (error) {
+      console.log("Socket message error:", error);
     }
   });
 
@@ -87,6 +104,7 @@ io.on("connection", (socket) => {
 });
 
 // ✅ IMPORTANT: Use server.listen
-server.listen(3000, () =>
-  console.log("Server running on port 3000")
-);
+const PORT = 3001;
+server.listen(PORT, () =>
+  console.log(`Server running on port ${PORT}`)
+);

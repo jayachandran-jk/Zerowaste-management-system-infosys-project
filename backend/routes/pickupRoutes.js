@@ -1,5 +1,6 @@
 import express from "express";
 import Pickup from "../model/pickup.js";
+import Notification from "../model/notification.js";
 import { createPickup, getPickups } from "../controller/dashboardController.js";
 import { protect, authorizeRoles } from "../middleware/authMiddleware.js";
 
@@ -54,6 +55,15 @@ router.put(
         return res.status(404).json({ message: "Pickup not found" });
       }
 
+      // Create Notification for volunteer
+      await Notification.create({
+        recipient: pickup.volunteer,
+        sender: req.user._id,
+        type: "pickup_status",
+        content: `Your pickup request has been accepted by ${req.user.name}`,
+        link: "/dashboard",
+      });
+
       res.status(200).json(pickup);
     } catch (error) {
       console.error("Error accepting pickup:", error);
@@ -81,6 +91,15 @@ router.put(
         return res.status(404).json({ message: "Pickup not found" });
       }
 
+      // Create Notification for volunteer
+      await Notification.create({
+        recipient: pickup.volunteer,
+        sender: req.user._id,
+        type: "pickup_status",
+        content: `Your pickup request has been rejected by ${req.user.name}`,
+        link: "/dashboard",
+      });
+
       res.status(200).json(pickup);
     } catch (error) {
       console.error("Error rejecting pickup:", error);
@@ -107,6 +126,15 @@ router.put(
       if (!pickup) {
         return res.status(404).json({ message: "Pickup not found" });
       }
+
+      // Create Notification for volunteer
+      await Notification.create({
+        recipient: pickup.volunteer,
+        sender: req.user._id,
+        type: "pickup_status",
+        content: `Your pickup has been marked as completed by ${req.user.name}`,
+        link: "/dashboard",
+      });
 
       res.status(200).json(pickup);
     } catch (error) {

@@ -2,6 +2,7 @@ import express from "express";
 import upload from "../middleware/multer.js";
 import { createOpportunity, updateOpportunity } from "../controller/dashboardController.js";
 import Opportunity from "../model/opportunity.js";
+import Notification from "../model/notification.js";
 import { protect, authorizeRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -182,6 +183,15 @@ router.put(
       applicant.status = status;
 
       await opportunity.save();
+
+      // Create Notification for volunteer
+      await Notification.create({
+        recipient: userId,
+        sender: req.user._id,
+        type: "opportunity_status",
+        content: `Your application for "${opportunity.title}" has been ${status} by ${req.user.name}`,
+        link: "/opportunities",
+      });
 
       res.json({ success: true, opportunity });
 
