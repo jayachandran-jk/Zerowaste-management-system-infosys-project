@@ -42,8 +42,8 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 app.use(cors({
-  origin: allowedOrigins,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  origin: true,
+  methods: "*",
   credentials: true
 }));
 
@@ -72,8 +72,8 @@ app.get("/api/health", (req, res) => {
 
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
-    methods: ["GET", "POST"],
+    origin: true,
+    methods: "*",
     credentials: true
   },
 });
