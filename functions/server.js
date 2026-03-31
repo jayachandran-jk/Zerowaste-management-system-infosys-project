@@ -37,7 +37,6 @@ const server = http.createServer(app);
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
-  "https://zerowaste-c9152.web.app",
   process.env.FRONTEND_URL?.replace(/\/$/, "")
 ].filter(Boolean);
 
