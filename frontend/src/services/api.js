@@ -1,10 +1,19 @@
 import axios from "axios";
 import toast from "react-hot-toast";
 
+const getBaseURL = () => {
+    let url = import.meta.env.VITE_BACKEND_URL;
+    if (!url) return "/api";
+    
+    url = url.trim().replace(/\/$/, "");
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        url = `https://${url}`;
+    }
+    return `${url}/api`;
+};
+
 const API = axios.create({
-    baseURL: import.meta.env.VITE_BACKEND_URL 
-        ? `${import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "")}/api` 
-        : "/api",
+    baseURL: getBaseURL(),
     timeout: 30000,
 });
 
