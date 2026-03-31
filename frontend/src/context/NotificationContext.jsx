@@ -36,7 +36,9 @@ export const NotificationProvider = ({ children }) => {
       fetchNotifications();
       fetchUnreadCount();
 
-      const newSocket = io(backendUrl);
+      const newSocket = io(backendUrl, {
+        transports: ["polling"]
+      });
       setSocket(newSocket);
 
       const userStr = localStorage.getItem("user");

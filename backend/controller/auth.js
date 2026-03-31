@@ -63,11 +63,15 @@ export const registerUser = async (req, res) => {
       console.log("Mock User Registered:", newUser.email);
     }
 
-    // Send OTP to email
+    // Send OTP to email with a 5-second timeout
     try {
-      await sendEmail(email, otp);
+      const emailPromise = sendEmail(email, otp);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Email timeout")), 5000)
+      );
+      await Promise.race([emailPromise, timeoutPromise]);
     } catch (e) {
-      console.log("Email sending failed, but continuing in mock mode with OTP:", otp);
+      console.log("Email sending failed or timed out, continuing with OTP:", otp);
     }
 
     res.status(201).json({
