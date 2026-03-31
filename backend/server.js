@@ -38,7 +38,7 @@ const server = http.createServer(app);
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
-  process.env.FRONTEND_URL
+  process.env.FRONTEND_URL?.replace(/\/$/, "")
 ].filter(Boolean);
 
 app.use(cors({
