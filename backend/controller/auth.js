@@ -11,6 +11,7 @@ const mockUsers = [];
 const isDbConnected = () => mongoose.connection.readyState === 1;
 
 export const registerUser = async (req, res) => { 
+  console.log("DEBUG: registerUser controller hit with body:", req.body);
   try {
     const { name, email, username, password, role } = req.body;
 

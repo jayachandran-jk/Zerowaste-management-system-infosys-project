@@ -3,6 +3,8 @@ const router = express.Router();
 import bcrypt from "bcryptjs";
 import User from "../model/user.js";
 
+console.log("DEBUG: User routes file executing...");
+
 import {
   registerUser,
   verifyRegisterOtp,
