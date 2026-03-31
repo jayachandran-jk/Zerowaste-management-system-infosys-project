@@ -1,11 +1,24 @@
 # Node modules
 node_modules/
 
+# Environment files
+.env
+.env.*
+!.env.example
 
+# Build files
+dist/
+dist-ssr/
 
 # Logs
 logs
 *.log
+npm-debug.log*
 
 # OS files
 .DS_Store
+Thumbs.db
+
+# Project-specific
+backend/uploads/
+.firebase/

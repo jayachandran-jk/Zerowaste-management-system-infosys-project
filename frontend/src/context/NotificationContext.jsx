@@ -5,7 +5,7 @@ import { io } from "socket.io-client";
 const NotificationContext = createContext();
 const backendUrl = import.meta.env.VITE_BACKEND_URL 
   ? import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "") 
-  : "http://localhost:3001";
+  : "";
 
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
